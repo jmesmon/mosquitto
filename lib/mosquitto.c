@@ -1068,6 +1068,28 @@ int mosquitto_loop_forever(struct mosquitto *mosq, int timeout, int max_packets)
 	return rc;
 }
 
+time_t mosquitto_timeout(struct mosquitto *mosq)
+{
+	time_t soonest = 0, a;
+
+	a = _mosquitto_check_keepalive_time(mosq);
+	if (!soonest || a < soonest)
+		soonest = a;
+
+	a = _mosquitto_message_retry_time(mosq);
+	if (!soonest || a < soonest)
+		soonest = a;
+
+	/* ping keepalive */
+	if (mosq->ping_t) {
+		a = mosq->ping_t + mosq->keepalive;
+		if (!soonest || a < soonest)
+			soonest = a;
+	}
+
+	return soonest;
+}
+
 int mosquitto_loop_misc_at(struct mosquitto *mosq, time_t now)
 {
 	int rc;

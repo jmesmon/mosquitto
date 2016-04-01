@@ -309,6 +309,49 @@ int _mosquitto_message_remove(struct mosquitto *mosq, uint16_t mid, enum mosquit
 }
 
 #ifdef WITH_THREADING
+static time_t _mosquitto_message_retry_time_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages, pthread_mutex_t *mutex)
+#else
+static time_t _mosquitto_message_retry_time_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages)
+#endif
+{
+	assert(mosq);
+
+#ifdef WITH_THREADING
+	pthread_mutex_lock(mutex);
+#endif
+	time_t soonest = 0;
+	time_t a;
+
+	while(messages){
+		a = messages->timestamp + mosq->message_retry;
+		if (!soonest || a < soonest)
+			soonest = a;
+		messages = messages->next;
+	}
+#ifdef WITH_THREADING
+	pthread_mutex_unlock(mutex);
+#endif
+
+	return soonest;
+}
+
+time_t _mosquitto_message_retry_time(struct mosquitto *mosq)
+{
+	time_t soonest, a;
+#ifdef WITH_THREADING
+	soonest = _mosquitto_message_retry_time_actual(mosq, mosq->out_messages, &mosq->out_message_mutex);
+	a = _mosquitto_message_retry_time_actual(mosq, mosq->in_messages, &mosq->in_message_mutex);
+#else
+	soonest = _mosquitto_message_retry_time_actual(mosq, mosq->out_messages);
+	a = _mosquitto_message_retry_time_actual(mosq, mosq->in_messages);
+#endif
+	if (!soonest || a < soonest)
+		soonest = a;
+	return soonest;
+}
+
+
+#ifdef WITH_THREADING
 static void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages, pthread_mutex_t *mutex)
 #else
 static void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages)

@@ -78,6 +78,44 @@ int _mosquitto_packet_alloc(struct _mosquitto_packet *packet)
 }
 
 #ifdef WITH_BROKER
+time_t _mosquitto_check_keepalive_time(struct mosquitto_db *db, struct mosquitto *mosq)
+#else
+time_t _mosquitto_check_keepalive_time(struct mosquitto *mosq)
+#endif
+{
+	time_t soonest = 0, a;
+
+	time_t last_msg_out;
+	time_t last_msg_in;
+
+	assert(mosq);
+#if defined(WITH_BROKER) && defined(WITH_BRIDGE)
+	/* Check if a lazy bridge should be timed out due to idle. */
+	if(mosq->bridge && mosq->bridge->start_type == bst_lazy
+				&& mosq->sock != INVALID_SOCKET) {
+		a = mosq->bridge->idle_timeout + mosq->last_msg_out;
+		if (!soonest || a < soonest)
+			soonest = a;
+	}
+#endif
+	pthread_mutex_lock(&mosq->msgtime_mutex);
+	last_msg_out = mosq->last_msg_out;
+	last_msg_in = mosq->last_msg_in;
+	pthread_mutex_unlock(&mosq->msgtime_mutex);
+	if(mosq->keepalive && mosq->sock != INVALID_SOCKET) {
+		a = mosq->keepalive + last_msg_out;
+		if (!soonest || a < soonest)
+			soonest = a;
+
+		a = mosq->keepalive + last_msg_in;
+		if (!soonest || a < soonest)
+			soonest = a;
+	}
+
+	return soonest;
+}
+
+#ifdef WITH_BROKER
 void _mosquitto_check_keepalive_at(struct mosquitto_db *db, struct mosquitto *mosq, time_t now)
 #else
 void _mosquitto_check_keepalive_at(struct mosquitto *mosq, time_t now)

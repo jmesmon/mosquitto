@@ -26,6 +26,7 @@ int _mosquitto_message_queue(struct mosquitto *mosq, struct mosquitto_message_al
 void _mosquitto_messages_reconnect_reset(struct mosquitto *mosq);
 int _mosquitto_message_remove(struct mosquitto *mosq, uint16_t mid, enum mosquitto_msg_direction dir, struct mosquitto_message_all **message);
 void _mosquitto_message_retry_check(struct mosquitto *mosq);
+time_t _mosquitto_message_retry_time(struct mosquitto *mosq);
 int _mosquitto_message_out_update(struct mosquitto *mosq, uint16_t mid, enum mosquitto_msg_state state);
 
 #endif

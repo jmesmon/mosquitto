@@ -818,6 +818,33 @@ libmosq_EXPORT int mosquitto_loop_stop(struct mosquitto *mosq, bool force);
 libmosq_EXPORT int mosquitto_socket(struct mosquitto *mosq);
 
 /*
+ * Function: mosquitto_timeout
+ *
+ * Determine the next time at which the library will want to take an action.
+ * This should (generally) only be used to call mosquitto_loop_misc() if you
+ * are monitoring the client network socket for activity yourself.
+ *
+ * This function's return value may change after any interaction with the
+ * mosquitto instance.
+ *
+ * In optimal usage, you should call this and use it's return to adjust your
+ * timeout prior to returning to monitoring network activity if any mosqitto
+ * functions that might queue data for this mosquitto instance were called.
+ *
+ * Parameters:
+ *	mosq - a valid mosquitto instance.
+ *
+ * Returns:
+ *	0 (zero) - no timeout is needed
+ *	Otherwise, the next time mosquitto_loop_misc() should be called for
+ *	optimal latency & load.
+ *
+ * See Also:
+ *	<mosqitto_socket>, <mosquitto_loop_misc>, <mosquitto_want_write>
+ */
+libmosq_EXPORT time_t mosquitto_timeout(struct mosquitto *mosq);
+
+/*
  * Function: mosquitto_loop_read
  *
  * Carry out network read operations.
@@ -886,6 +913,12 @@ libmosq_EXPORT int mosquitto_loop_write(struct mosquitto *mosq, int max_packets)
  *
  * This function deals with handling PINGs and checking whether messages need
  * to be retried, so should be called fairly frequently.
+ *
+ * The function mosquitto_timeout() returns the next time that this function
+ * should be called for optimal utilization. However, it is safe to call it
+ * more frequently.
+ *
+ * At most, you might want to call this once per second.
  *
  * Parameters:
  *	mosq - a valid mosquitto instance.
