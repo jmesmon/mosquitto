@@ -21,6 +21,8 @@ Contributors:
 extern "C" {
 #endif
 
+#include <time.h>
+
 #if defined(WIN32) && !defined(WITH_BROKER)
 #	ifdef libmosquitto_EXPORTS
 #		define libmosq_EXPORT  __declspec(dllexport)
@@ -897,6 +899,30 @@ libmosq_EXPORT int mosquitto_loop_write(struct mosquitto *mosq, int max_packets)
  *	<mosquitto_socket>, <mosquitto_loop_read>, <mosquitto_loop_write>
  */
 libmosq_EXPORT int mosquitto_loop_misc(struct mosquitto *mosq);
+
+/*
+ * Function: mosquitto_loop_misc_at
+ *
+ * Carry out miscellaneous operations required as part of the network loop.
+ * This should only be used if you are not using mosquitto_loop() and are
+ * monitoring the client network socket for activity yourself.
+ *
+ * This function deals with handling PINGs and checking whether messages need
+ * to be retried, so should be called fairly frequently.
+ *
+ * Parameters:
+ *	mosq - a valid mosquitto instance.
+ *	now  - the time at which we are running.
+ *
+ * Returns:
+ *	MOSQ_ERR_SUCCESS -   on success.
+ * 	MOSQ_ERR_INVAL -     if the input parameters were invalid.
+ * 	MOSQ_ERR_NO_CONN -   if the client isn't connected to a broker.
+ *
+ * See Also:
+ *	<mosquitto_loop_misc>, <mosquitto_socket>, <mosquitto_loop_read>, <mosquitto_loop_write>
+ */
+libmosq_EXPORT int mosquitto_loop_misc_at(struct mosquitto *mosq, time_t now);
 
 /*
  * Function: mosquitto_want_write

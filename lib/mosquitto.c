@@ -1068,9 +1068,8 @@ int mosquitto_loop_forever(struct mosquitto *mosq, int timeout, int max_packets)
 	return rc;
 }
 
-int mosquitto_loop_misc(struct mosquitto *mosq)
+int mosquitto_loop_misc_at(struct mosquitto *mosq, time_t now)
 {
-	time_t now = mosquitto_time();
 	int rc;
 
 	if(!mosq) return MOSQ_ERR_INVAL;
@@ -1103,6 +1102,11 @@ int mosquitto_loop_misc(struct mosquitto *mosq)
 		return MOSQ_ERR_CONN_LOST;
 	}
 	return MOSQ_ERR_SUCCESS;
+}
+
+int mosquitto_loop_misc(struct mosquitto *mosq)
+{
+	return mosquitto_loop_misc_at(mosq, mosquitto_time());
 }
 
 static int _mosquitto_loop_rc_handle(struct mosquitto *mosq, int rc)
