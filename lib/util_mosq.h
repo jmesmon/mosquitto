@@ -31,6 +31,11 @@ void _mosquitto_check_keepalive(struct mosquitto_db *db, struct mosquitto *mosq)
 #else
 void _mosquitto_check_keepalive(struct mosquitto *mosq);
 #endif
+#ifdef WITH_BROKER
+void _mosquitto_check_keepalive_at(struct mosquitto_db *db, struct mosquitto *mosq, time_t now);
+#else
+void _mosquitto_check_keepalive_at(struct mosquitto *mosq, time_t now);
+#endif
 uint16_t _mosquitto_mid_generate(struct mosquitto *mosq);
 FILE *_mosquitto_fopen(const char *path, const char *mode);
 

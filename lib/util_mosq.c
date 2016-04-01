@@ -78,14 +78,13 @@ int _mosquitto_packet_alloc(struct _mosquitto_packet *packet)
 }
 
 #ifdef WITH_BROKER
-void _mosquitto_check_keepalive(struct mosquitto_db *db, struct mosquitto *mosq)
+void _mosquitto_check_keepalive_at(struct mosquitto_db *db, struct mosquitto *mosq, time_t now)
 #else
-void _mosquitto_check_keepalive(struct mosquitto *mosq)
+void _mosquitto_check_keepalive_at(struct mosquitto *mosq, time_t now)
 #endif
 {
 	time_t last_msg_out;
 	time_t last_msg_in;
-	time_t now = mosquitto_time();
 #ifndef WITH_BROKER
 	int rc;
 #endif
@@ -143,6 +142,19 @@ void _mosquitto_check_keepalive(struct mosquitto *mosq)
 #endif
 		}
 	}
+}
+
+#ifdef WITH_BROKER
+void _mosquitto_check_keepalive(struct mosquitto_db *db, struct mosquitto *mosq)
+#else
+void _mosquitto_check_keepalive(struct mosquitto *mosq)
+#endif
+{
+#ifdef WITH_BROKER
+	_mosquitto_check_keepalive_at(db, mosq, mosquitto_time());
+#else
+	_mosquitto_check_keepalive_at(mosq, mosquitto_time());
+#endif
 }
 
 uint16_t _mosquitto_mid_generate(struct mosquitto *mosq)

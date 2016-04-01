@@ -1070,14 +1070,13 @@ int mosquitto_loop_forever(struct mosquitto *mosq, int timeout, int max_packets)
 
 int mosquitto_loop_misc(struct mosquitto *mosq)
 {
-	time_t now;
+	time_t now = mosquitto_time();
 	int rc;
 
 	if(!mosq) return MOSQ_ERR_INVAL;
 	if(mosq->sock == INVALID_SOCKET) return MOSQ_ERR_NO_CONN;
 
-	_mosquitto_check_keepalive(mosq);
-	now = mosquitto_time();
+	_mosquitto_check_keepalive_at(mosq, now);
 	if(mosq->last_retry_check+1 < now){
 		_mosquitto_message_retry_check(mosq);
 		mosq->last_retry_check = now;
