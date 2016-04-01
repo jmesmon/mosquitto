@@ -309,9 +309,9 @@ int _mosquitto_message_remove(struct mosquitto *mosq, uint16_t mid, enum mosquit
 }
 
 #ifdef WITH_THREADING
-void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages, pthread_mutex_t *mutex)
+static void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages, pthread_mutex_t *mutex)
 #else
-void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages)
+static void _mosquitto_message_retry_check_actual(struct mosquitto *mosq, struct mosquitto_message_all *messages)
 #endif
 {
 	time_t now = mosquitto_time();
